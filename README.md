@@ -8,13 +8,8 @@
 <h2 align="center">
   A Roblox script built from the ground up for your precise needs!
   <br/>
-  Rise up to the top while remaining completely untouchable.
+  Originally created by 7GrandDad/xylex, ajusted by me.
 </h2>
-
-## Contacts
-[Discord](https://discord.gg/5gJqhQmrdS)
-<br/>
-[Youtube](https://youtube.com/c/7GrandDadVape)
 
 ## Usage
 1. Download the specific scripting utility of your choice.
@@ -31,3 +26,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeuxtronic/VapeV4ForR
 [Egor Skriptunoff, boatbomber, and howmanysmall](https://devforum.roblox.com/t/open-source-hashlib/416732/1) - HashLibrary for Luau
 <br/>
 [Vernumerator](https://devforum.roblox.com/t/predict-projectile-ballistics-including-gravity-and-motion/1842434) - Projectile prediction for Roblox
+
+## Contacts
+[Discord](https://discord.gg/5gJqhQmrdS) - The Discord for the non-forked vape
+<br/>
+[Youtube](https://youtube.com/c/7GrandDadVape) - Youtube for 7GrandDad

@@ -22,7 +22,7 @@ tldr
 1. Download the specific scripting utility of your choice.
 2. Execute the provided loadstring below.
 ```luau
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeuxtronic/VapeV4ForRoblox/main/NewMainScript.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeuxtronic/Vape-v4-forked/main/NewMainScript.lua", true))()
 ```
 
 ## Credits

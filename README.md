@@ -11,6 +11,13 @@
   Originally created by 7GrandDad/xylex, ajusted by me.
 </h2>
 
+## Improvements
+This is, of course, a fork.
+This was made because vapev4 doesnt get updated that much anymore and alot of vapev4 forks are shit (VW) or outdated
+
+Improvements includes:
+tldr
+
 ## Usage
 1. Download the specific scripting utility of your choice.
 2. Execute the provided loadstring below.

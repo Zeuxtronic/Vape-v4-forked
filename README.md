@@ -24,8 +24,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeuxtronic/VapeV4ForR
 ```
 
 ## Credits
-[7GrandDad](https://github.com/7GrandDadPGN) - Lead maintainer of the project - (discord / vaperoblox)
-Original creator of vapev4 (This is a fork, duh.)
+[7GrandDad](https://github.com/7GrandDadPGN) - Original creator of vapev4 - (discord / vaperoblox)
 <br/>
 [rce-incorporated](https://github.com/rce-incorporated/Fiu) - Luau bytecode disassembly with modifications
 <br/>

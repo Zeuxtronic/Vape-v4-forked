@@ -1,3 +1,4 @@
+
 local loadstring = function(...)
 	local res, err = loadstring(...)
 	if err and vape then
@@ -3502,7 +3503,7 @@ run(function()
 		arrow.AnchorPoint = Vector2.new(0.5, 0.5)
 		arrow.BackgroundTransparency = 1
 		arrow.BorderSizePixel = 0
-		arrow.Visible = false
+		arrow.Visible = Outside.Enabled
 		arrow.Image = getcustomasset('newvape/assets/new/arrowmodule.png')
 		arrow.ImageColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
 		arrow.Parent = Folder
@@ -3538,8 +3539,8 @@ run(function()
 			end
 	
 			local _, rootVis = gameCamera:WorldToScreenPoint(ent.RootPart.Position)
-			arrow.Visible = not rootVis
-			if rootVis then continue end
+			arrow.Visible = not Outside.Enabled and not rootVis or Outside.Enabled and true
+			if rootVis and not Outside.Enabled then return end
 	
 			local dir = CFrame.lookAlong(gameCamera.CFrame.Position, gameCamera.CFrame.LookVector * Vector3.new(1, 0, 1)):PointToObjectSpace(ent.RootPart.Position)
 			arrow.Rotation = math.deg(math.atan2(dir.Z, dir.X))
@@ -3613,6 +3614,9 @@ run(function()
 		DefaultMax = 64,
 		Darker = true,
 		Visible = false
+	})
+	Outside = Arrows:CreateToggle({
+		Name = 'Include Entitys Outside FOV'
 	})
 end)
 	
@@ -7179,57 +7183,6 @@ run(function()
 end)
 	
 run(function()
-	local Clock
-	local TwentyFourHour
-	local label
-	
-	Clock = vape.Legit:CreateModule({
-		Name = 'Clock',
-		Function = function(callback)
-			if callback then
-				repeat
-					label.Text = DateTime.now():FormatLocalTime('LT', TwentyFourHour.Enabled and 'zh-cn' or 'en-us')
-					task.wait(1)
-				until not Clock.Enabled
-			end
-		end,
-		Size = UDim2.fromOffset(100, 41),
-		Tooltip = 'Shows the current local time'
-	})
-	Clock:CreateFont({
-		Name = 'Font',
-		Blacklist = 'Gotham',
-		Function = function(val)
-			label.FontFace = val
-		end
-	})
-	Clock:CreateColorSlider({
-		Name = 'Color',
-		DefaultValue = 0,
-		DefaultOpacity = 0.5,
-		Function = function(hue, sat, val, opacity)
-			label.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
-			label.BackgroundTransparency = 1 - opacity
-		end
-	})
-	TwentyFourHour = Clock:CreateToggle({
-		Name = '24 Hour Clock'
-	})
-	label = Instance.new('TextLabel')
-	label.Size = UDim2.new(0, 100, 0, 41)
-	label.BackgroundTransparency = 0.5
-	label.TextSize = 15
-	label.Font = Enum.Font.Gotham
-	label.Text = '0:00 PM'
-	label.TextColor3 = Color3.new(1, 1, 1)
-	label.BackgroundColor3 = Color3.new()
-	label.Parent = Clock.Children
-	local corner = Instance.new('UICorner')
-	corner.CornerRadius = UDim.new(0, 4)
-	corner.Parent = label
-end)
-	
-run(function()
 	local Disguise
 	local Mode
 	local IDBox
@@ -7247,13 +7200,15 @@ run(function()
 	end
 	
 	local function characterAdded(char)
+     	local ID = IDBox.Value == '' and 239702688 or tonumber(IDBox.Value)
+      	local ID = ID == nil and playersService:GetUserIdFromNameAsync(IDBox.Value) or ID
 		if Mode.Value == 'Character' then
 			task.wait(0.1)
 			char.Character.Archivable = true
 			local clone = char.Character:Clone()
 			repeat
 				if pcall(function()
-					desc = playersService:GetHumanoidDescriptionFromUserId(IDBox.Value == '' and 239702688 or tonumber(IDBox.Value))
+					desc = playersService:GetHumanoidDescriptionFromUserId(ID)
 				end) and desc then break end
 				task.wait(1)
 			until not Disguise.Enabled
@@ -7337,7 +7292,7 @@ run(function()
 			local data
 			repeat
 				if pcall(function()
-					data = marketplaceService:GetProductInfo(IDBox.Value == '' and 43 or tonumber(IDBox.Value), Enum.InfoType.Bundle)
+					data = marketplaceService:GetProductInfo(ID, Enum.InfoType.Bundle)
 				end) then break end
 				task.wait(1)
 			until not Disguise.Enabled
@@ -7390,7 +7345,7 @@ run(function()
 	})
 	IDBox = Disguise:CreateTextBox({
 		Name = 'Disguise',
-		Placeholder = 'Disguise User Id',
+		Placeholder = 'Disguise Username / User Id',
 		Function = function()
 			if Disguise.Enabled then
 				Disguise:Toggle()
@@ -7434,6 +7389,9 @@ run(function()
 	]]
 	local FPS
 	local label
+ 	local frame
+  	local stroke
+   	local BorderColor
 	
 	FPS = vape.Legit:CreateModule({
 		Name = 'FPS',
@@ -7465,6 +7423,16 @@ run(function()
 			label.FontFace = val
 		end
 	})
+	FPS:CreateSlider({
+		Name = 'Font Size',
+		Min = 1,
+		Max = 30,
+		Default = 15,
+  		Function = function(num)
+        	label.TextSize = num
+        end,
+		Darker = false
+	})
 	FPS:CreateColorSlider({
 		Name = 'Color',
 		DefaultValue = 0,
@@ -7474,15 +7442,42 @@ run(function()
 			label.BackgroundTransparency = 1 - opacity
 		end
 	})
+	BorderColor = FPS:CreateColorSlider({
+		Name = 'Border Color',
+		Function = function(hue, sat, val, opacity)
+			stroke.Color = Color3.fromHSV(hue, sat, val)
+		end,
+		Darker = true,
+		Visible = false
+	})
+	FPS:CreateToggle({
+		Name = 'Border',
+		Function = function(callback)
+			BorderColor.Object.Visible = callback
+   			stroke.Enabled = callback
+		end
+	})
+	frame = Instance.new('Frame')
+	frame.Size = UDim2.fromScale(1, 1)
+	frame.BackgroundTransparency = 0.5
+	frame.BackgroundColor3 = Color3.new()
+	frame.Parent = FPS.Children
+
 	label = Instance.new('TextLabel')
 	label.Size = UDim2.fromScale(1, 1)
-	label.BackgroundTransparency = 0.5
+	label.BackgroundTransparency = 1
 	label.TextSize = 15
 	label.Font = Enum.Font.Gotham
 	label.Text = 'inf FPS'
 	label.TextColor3 = Color3.new(1, 1, 1)
 	label.BackgroundColor3 = Color3.new()
-	label.Parent = FPS.Children
+	label.Parent = frame
+ 
+	stroke = Instance.new('UIStroke')
+	stroke.Enabled = false
+	stroke.Color = Color3.fromHSV(0.44, 1, 1)
+	stroke.Parent = frame
+ 
 	local corner = Instance.new('UICorner')
 	corner.CornerRadius = UDim.new(0, 4)
 	corner.Parent = label
@@ -7626,7 +7621,10 @@ end)
 	
 run(function()
 	local Memory
+ 	local BorderColor
 	local label
+ 	local frame
+  	local stroke
 	
 	Memory = vape.Legit:CreateModule({
 		Name = 'Memory',
@@ -7641,12 +7639,48 @@ run(function()
 		Size = UDim2.fromOffset(100, 41),
 		Tooltip = 'A label showing the memory currently used by roblox'
 	})
+
+	frame = Instance.new('Frame')
+	frame.Size = UDim2.fromScale(1, 1)
+	frame.BackgroundTransparency = 0.5
+	frame.BackgroundColor3 = Color3.new()
+	frame.Parent = Memory.Children
+
+	label = Instance.new('TextLabel')
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.TextSize = 15
+	label.Font = Enum.Font.Gotham
+	label.Text = '10GB'
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundColor3 = Color3.new()
+	label.Parent = frame
+ 
+	stroke = Instance.new('UIStroke')
+	stroke.Enabled = false
+	stroke.Color = Color3.fromHSV(0.44, 1, 1)
+	stroke.Parent = frame
+ 
+	local corner = Instance.new('UICorner')
+	corner.CornerRadius = UDim.new(0, 4)
+	corner.Parent = label
+
 	Memory:CreateFont({
 		Name = 'Font',
 		Blacklist = 'Gotham',
 		Function = function(val)
 			label.FontFace = val
 		end
+	})
+	Memory:CreateSlider({
+		Name = 'Font Size',
+		Min = 1,
+		Max = 30,
+		Default = 15,
+  		Function = function(num)
+        	label.TextSize = num
+        end,
+		Darker = false
 	})
 	Memory:CreateColorSlider({
 		Name = 'Color',
@@ -7657,23 +7691,29 @@ run(function()
 			label.BackgroundTransparency = 1 - opacity
 		end
 	})
-	label = Instance.new('TextLabel')
-	label.Size = UDim2.new(0, 100, 0, 41)
-	label.BackgroundTransparency = 0.5
-	label.TextSize = 15
-	label.Font = Enum.Font.Gotham
-	label.Text = '0 MB'
-	label.TextColor3 = Color3.new(1, 1, 1)
-	label.BackgroundColor3 = Color3.new()
-	label.Parent = Memory.Children
-	local corner = Instance.new('UICorner')
-	corner.CornerRadius = UDim.new(0, 4)
-	corner.Parent = label
+	BorderColor = Memory:CreateColorSlider({
+		Name = 'Border Color',
+		Function = function(hue, sat, val, opacity)
+			stroke.Color = Color3.fromHSV(hue, sat, val)
+		end,
+		Darker = true,
+		Visible = false
+	})
+	Memory:CreateToggle({
+		Name = 'Border',
+		Function = function(callback)
+			BorderColor.Object.Visible = callback
+   			stroke.Enabled = callback
+		end
+	})
 end)
 	
 run(function()
 	local Ping
 	local label
+ 	local frame
+  	local stroke
+   	local BorderColor
 	
 	Ping = vape.Legit:CreateModule({
 		Name = 'Ping',
@@ -7688,12 +7728,23 @@ run(function()
 		Size = UDim2.fromOffset(100, 41),
 		Tooltip = 'Shows the current connection speed to the roblox server'
 	})
-	Ping:CreateFont({
+	
+ 	Ping:CreateFont({
 		Name = 'Font',
 		Blacklist = 'Gotham',
 		Function = function(val)
 			label.FontFace = val
 		end
+	})
+	Ping:CreateSlider({
+		Name = 'Font Size',
+		Min = 1,
+		Max = 30,
+		Default = 15,
+  		Function = function(num)
+        	label.TextSize = num
+        end,
+		Darker = false
 	})
 	Ping:CreateColorSlider({
 		Name = 'Color',
@@ -7704,15 +7755,42 @@ run(function()
 			label.BackgroundTransparency = 1 - opacity
 		end
 	})
+	BorderColor = Ping:CreateColorSlider({
+		Name = 'Border Color',
+		Function = function(hue, sat, val, opacity)
+			stroke.Color = Color3.fromHSV(hue, sat, val)
+		end,
+		Darker = true,
+		Visible = false
+	})
+	Ping:CreateToggle({
+		Name = 'Border',
+		Function = function(callback)
+			BorderColor.Object.Visible = callback
+   			stroke.Enabled = callback
+		end
+	})
+	frame = Instance.new('Frame')
+	frame.Size = UDim2.fromScale(1, 1)
+	frame.BackgroundTransparency = 0.5
+	frame.BackgroundColor3 = Color3.new()
+	frame.Parent = Ping.Children
+
 	label = Instance.new('TextLabel')
-	label.Size = UDim2.new(0, 100, 0, 41)
-	label.BackgroundTransparency = 0.5
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
 	label.TextSize = 15
 	label.Font = Enum.Font.Gotham
-	label.Text = '0 ms'
+	label.Text = 'inf FPS'
 	label.TextColor3 = Color3.new(1, 1, 1)
 	label.BackgroundColor3 = Color3.new()
-	label.Parent = Ping.Children
+	label.Parent = frame
+ 
+	stroke = Instance.new('UIStroke')
+	stroke.Enabled = false
+	stroke.Color = Color3.fromHSV(0.44, 1, 1)
+	stroke.Parent = frame
+ 
 	local corner = Instance.new('UICorner')
 	corner.CornerRadius = UDim.new(0, 4)
 	corner.Parent = label
@@ -7735,7 +7813,7 @@ run(function()
 		end
 	
 		if #list <= 0 then
-			notif('SongBeats', 'no songs', 10)
+			notif('SongBeats', 'No songs inputed.', 7)
 			SongBeats:Toggle()
 			return
 		end
@@ -7748,20 +7826,15 @@ run(function()
 			until not table.find(alreadypicked, chosensong) or not SongBeats.Enabled
 		end
 		if not SongBeats.Enabled then return end
-	
-		local split = chosensong:split('/')
-		if not isfile(split[1]) then
-			notif('SongBeats', 'Missing song ('..split[1]..')', 10)
-			SongBeats:Toggle()
-			return
-		end
+  
+  		local split = string.split(chosensong,'/')
 	
 		songobj.SoundId = assetfunction(split[1])
+  		songobj:Play()
 		repeat task.wait() until songobj.IsLoaded or not SongBeats.Enabled
 		if SongBeats.Enabled then
 			beattick = tick() + (tonumber(split[3]) or 0)
 			songbpm = 60 / (tonumber(split[2]) or 50)
-			songobj:Play()
 		end
 	end
 	
